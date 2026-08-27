@@ -56,6 +56,9 @@ def judge_replay(bm: Beatmap, rp: ParsedReplay) -> JudgeResult:
     res = JudgeResult(windows=w, rate=Beatmap.rate(rp.mods))
 
     objs = [o for o in bm.hit_objects if o.kind in ("circle", "slider")]
+    if rp.frames:
+        played_until = rp.frames[-1][0] + w["50"]
+        objs = [o for o in objs if o.time <= played_until]
     presses = sorted([e for e in rp.key_events if e.key in ("left", "right")],
                      key=lambda e: e.press)
 

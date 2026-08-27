@@ -70,7 +70,7 @@ STRINGS = {
     "aim.col_spread": "spread",
     "aim.col_edge": "edge hits",
     "aim.col_over": "overshoot",
-    "aim.col_over_pct": "% overshoot",
+    "aim.col_over_pct": "% over",
     "aim.col_dir": "direction",
     "aim.no_data": "This replay has no cursor data.",
     "aim.radius": "Circle radius",
@@ -333,4 +333,73 @@ STRINGS = {
     "tr.ex.early.why": "In {n} spots you were consistently early.",
     "tr.ex.early.how": "Deliberately start streams later than feels right.",
     "tr.ex.early.check": "Mean error on those stretches within ±5 ms.",
+
+    "tab.trainer": "Trainer",
+    "view.playback": "Playback",
+    "view.tapping": "Tapping",
+
+    "pb.play": "Play",
+    "pb.pause": "Pause",
+    "pb.jump_placeholder": "Jump to a problem spot…",
+    "pb.distance": "cursor {px:.0f} px from centre ({frac:.2f} radius)",
+    "pb.error": "hit {ms:+.0f} ms",
+    "pb.miss": "MISS",
+    "pb.extra": "extra press",
+
+    "tap.hold": "Hold time",
+    "tap.hold_value": "{ms:.0f} ms, spread {spread:.0f}",
+    "tap.hand_gap": "Hold difference between hands",
+    "tap.alternation": "Alternation",
+    "tap.single": "Two or more in a row on one hand",
+    "tap.max_bpm": "Fastest sustained tempo",
+    "tap.fatigue": "Fatigue",
+    "tap.fatigue_hint": "UR growth on stream sections, first third to last",
+    "tap.repeats": "Repeats under 45 ms on the same key",
+    "tap.hist_title": "Interval between presses",
+    "tap.hist_x": "interval, ms",
+    "tap.roll_title": "Tempo and steadiness over the map",
+    "tap.roll_y": "BPM",
+    "tap.roll_y2": "UR",
+    "tap.runs_title": "How many presses in a row on one hand",
+    "tap.col_run": "in a row",
+    "tap.col_count": "times",
+    "tap.no_data": "Not enough presses in this replay.",
+
+    "aim.speed": "Cursor speed at the press",
+    "aim.speed_value": "{v:.2f} px/ms",
+    "aim.settle": "Settled in the circle before the press",
+    "aim.on_arrival": "Clicked on arrival",
+    "aim.on_arrival_hint": "jumps clicked before the cursor settled",
+    "aim.col_speed": "speed",
+    "aim.col_settle": "settle",
+
+    "trn.info": (
+        "Hold a tempo and watch it come apart. The metronome clicks once per "
+        "beat and four presses are expected between clicks, which is how a "
+        "stream at that BPM is counted. Presses are read from the O3C only."),
+    "trn.target_bpm": "Target BPM:",
+    "trn.duration": "Duration, s:",
+    "trn.sound": "Metronome sound",
+    "trn.start": "Start",
+    "trn.stop": "Stop",
+    "trn.card_bpm": "current BPM",
+    "trn.card_ur": "UR of intervals",
+    "trn.card_drift": "drift, ms",
+    "trn.card_left": "seconds left",
+    "trn.plot_title": "Interval between presses",
+    "trn.plot_x": "press",
+    "trn.plot_y": "ms",
+    "trn.idle": "Set a tempo and press Start.",
+    "trn.count_in": "Count-in…",
+    "trn.count_in_left": "count-in: {n}",
+    "trn.no_device": "Could not start key capture: {message}",
+    "trn.too_few": "Too few presses to judge anything.",
+    "trn.result_held": (
+        "Held it. {bpm:.0f} BPM against a target of {target:.0f}, UR {ur:.0f}, "
+        "{taps} presses, slowdown {slowdown:+.0f} BPM, alternation {alt:.0f}%, "
+        "gaps dropped: {dropped}."),
+    "trn.result_missed": (
+        "Not held. {bpm:.0f} BPM against a target of {target:.0f}, UR {ur:.0f}, "
+        "{taps} presses, slowdown {slowdown:+.0f} BPM, alternation {alt:.0f}%, "
+        "gaps dropped: {dropped}."),
 }

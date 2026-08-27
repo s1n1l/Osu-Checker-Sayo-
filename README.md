@@ -42,6 +42,31 @@ Plus a breakdown by jump distance and by direction across eight sectors.
 **Problem spots** — the most expensive stretches of the map with the time,
 what was lost and the cause: *fell behind*, *rushed*, *scatter*, *aim*.
 
+### Playback
+
+The Playback view replays the map: hit circles coloured by what they scored,
+the cursor with its trail, a dashed line to the note being judged, and a
+read-out saying how far the cursor was from the centre and by how many
+milliseconds the press landed. The strip underneath is the whole map as a
+scatter of errors — click anywhere on it to jump there, or use the dropdown
+to jump straight to a problem spot.
+
+### Tapping
+
+Numbers about the presses themselves rather than about accuracy: hold time
+and its spread, the difference in hold between hands, how often the hands
+alternate, how many presses land in a row on one hand, the fastest tempo
+actually sustained, and fatigue, meaning how much UR grows on stream sections
+from the first third of the map to the last.
+
+### Trainer
+
+Hold a tempo and watch it fall apart. The metronome clicks once per beat and
+four presses are expected between clicks. Current BPM, interval UR and drift
+update live; when the run ends it says whether the tempo was held, by how much
+it slowed down, and how many gaps were dropped. Presses are read from the O3C
+through Raw Input, so it measures the same signal the game gets.
+
 ### Recording
 
 Three sources at once:

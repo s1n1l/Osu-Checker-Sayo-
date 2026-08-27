@@ -45,6 +45,8 @@ class AimHit:
     angle: float
     overshoot: float
     overshoot_norm: float
+    speed: float = 0.0
+    settle: float = 0.0
 
 
 @dataclass
@@ -84,6 +86,22 @@ class AimResult:
         jumps = [h for h in self.hits if h.jump > self.radius]
         return statistics.mean(h.overshoot for h in jumps) if jumps else 0.0
 
+    @property
+    def mean_speed(self) -> float:
+        return statistics.mean(h.speed for h in self.hits) if self.hits else 0.0
+
+    @property
+    def median_settle(self) -> float:
+        return statistics.median(h.settle for h in self.hits) if self.hits else 0.0
+
+    @property
+    def on_arrival_rate(self) -> float:
+        """Share of notes clicked before the cursor had settled in the circle."""
+        jumps = [h for h in self.hits if h.jump > self.radius]
+        if not jumps:
+            return 0.0
+        return sum(1 for h in jumps if h.settle < 20.0) / len(jumps)
+
     def by_jump_size(self, edges=(0, 60, 120, 200, 1e9)) -> list[dict]:
         """Breakdown by jump distance."""
         out = []
@@ -98,6 +116,8 @@ class AimResult:
                 "edge_rate": sum(1 for h in sel if h.dist_norm > 0.75) / len(sel),
                 "overshoot": statistics.mean(h.overshoot for h in sel),
                 "overshoot_rate": sum(1 for h in sel if h.overshoot_norm > 0.25) / len(sel),
+                "speed": statistics.mean(h.speed for h in sel),
+                "settle": statistics.median(h.settle for h in sel),
             })
         return out
 
@@ -170,11 +190,30 @@ def analyse_aim(bm: Beatmap, rp: ParsedReplay, res: JudgeResult) -> AimResult:
                             + (cy[lo:hi] - prev_pos[1]) * uy)
                     overshoot = max(0.0, float(proj.max()) - jump)
 
+        back = np.searchsorted(ct, t - 8.0)
+        here = min(np.searchsorted(ct, t), len(ct) - 1)
+        speed = 0.0
+        if here > back:
+            span = ct[here] - ct[back]
+            if span > 0:
+                speed = float(math.hypot(cx[here] - cx[back],
+                                         cy[here] - cy[back]) / span)
+
+        settle = 0.0
+        if out.radius:
+            i = int(np.searchsorted(ct, t)) - 1
+            while i >= 0 and t - ct[i] < 500.0:
+                if math.hypot(cx[i] - ox, cy[i] - oy) > out.radius:
+                    break
+                settle = t - ct[i]
+                i -= 1
+
         out.hits.append(AimHit(
             index=j.index, time=j.obj.time, dx=dx, dy=dy, dist=dist,
             dist_norm=dist / out.radius if out.radius else 0.0,
             jump=jump, angle=angle, overshoot=overshoot,
-            overshoot_norm=overshoot / out.radius if out.radius else 0.0))
+            overshoot_norm=overshoot / out.radius if out.radius else 0.0,
+            speed=speed, settle=settle))
 
         prev_pos = (ox, oy)
         prev_time = t

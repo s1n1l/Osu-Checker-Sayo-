@@ -29,6 +29,7 @@ def main() -> int:
         "--add-data", f"{ROOT / 'assets'};assets",
         "--collect-binaries", "hid",
         "--copy-metadata", "osrparse",
+        "--collect-submodules", "osuchecker.translations",
         "--exclude-module", "tkinter",
         "--exclude-module", "matplotlib",
         "--exclude-module", "PySide6.QtWebEngineCore",

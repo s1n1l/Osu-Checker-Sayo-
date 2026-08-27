@@ -37,6 +37,27 @@ def _selftest(replay: str | None) -> int:
     check("beatmap index", lambda: len(
         __import__("osuchecker.replay.index", fromlist=["BeatmapIndex"])
         .BeatmapIndex().by_md5))
+    check("QtMultimedia", lambda: __import__(
+        "PySide6.QtMultimedia", fromlist=["QSoundEffect"]).QSoundEffect.__name__)
+    check("gui modules", lambda: [
+        __import__(f"osuchecker.gui.{name}", fromlist=["x"]).__name__.split(".")[-1]
+        for name in ("theme", "playback", "trainer", "main")])
+    check("metronome clicks", lambda: [
+        __import__("osuchecker.gui.trainer", fromlist=["click_file"])
+        .click_file(accent) for accent in (False, True)][0][-10:])
+    def translations():
+        from osuchecker.i18n import LANGUAGES, set_language, t
+        out = {}
+        for code in LANGUAGES:
+            set_language(code)
+            sample = t("tab.analysis")
+            if sample == "tab.analysis":
+                raise RuntimeError(f"{code}: strings not bundled")
+            out[code] = sample
+        set_language("en")
+        return out
+
+    check("translations", translations)
 
     if replay:
         def parse():

@@ -289,4 +289,72 @@ STRINGS = {
     "tr.ex.early.why": "在 {n} 个片段中你持续偏早。",
     "tr.ex.early.how": "有意识地比“感觉该按”的时候更晚一点开始连打。",
     "tr.ex.early.check": "这些片段的平均误差在 ±5 毫秒以内。",
+
+    "tab.trainer": "训练器",
+    "view.playback": "回看",
+    "view.tapping": "敲击",
+
+    "pb.play": "播放",
+    "pb.pause": "暂停",
+    "pb.jump_placeholder": "跳到问题片段…",
+    "pb.distance": "光标距中心 {px:.0f} px（{frac:.2f} 倍半径）",
+    "pb.error": "命中 {ms:+.0f} 毫秒",
+    "pb.miss": "MISS",
+    "pb.extra": "多余按键",
+
+    "tap.hold": "按键保持时间",
+    "tap.hold_value": "{ms:.0f} 毫秒，离散 {spread:.0f}",
+    "tap.hand_gap": "两手保持时间差",
+    "tap.alternation": "双手交替率",
+    "tap.single": "同一只手连续两次以上",
+    "tap.max_bpm": "能维持的最快速度",
+    "tap.fatigue": "疲劳",
+    "tap.fatigue_hint": "连打段落 UR 从前三分之一到后三分之一的增长",
+    "tap.repeats": "同键快于 45 毫秒的重复",
+    "tap.hist_title": "按键间隔",
+    "tap.hist_x": "间隔，毫秒",
+    "tap.roll_title": "整张谱面的速度与稳定性",
+    "tap.roll_y": "BPM",
+    "tap.roll_y2": "UR",
+    "tap.runs_title": "同一只手连续按了几次",
+    "tap.col_run": "连续",
+    "tap.col_count": "次数",
+    "tap.no_data": "这个回放里的按键太少。",
+
+    "aim.speed": "按下瞬间的光标速度",
+    "aim.speed_value": "{v:.2f} px/毫秒",
+    "aim.settle": "按下前已在圈内停留",
+    "aim.on_arrival": "刚到就点",
+    "aim.on_arrival_hint": "光标尚未稳定就点击的跳跃占比",
+    "aim.col_speed": "速度",
+    "aim.col_settle": "停留",
+
+    "trn.info": (
+        "维持一个速度，看着它怎么散掉。节拍器每拍响一次，两次响声之间预期按"
+        "四下，连打的 BPM 就是这样数的。按键只从 O3C 读取。"),
+    "trn.target_bpm": "目标 BPM：",
+    "trn.duration": "时长，秒：",
+    "trn.sound": "节拍器声音",
+    "trn.start": "开始",
+    "trn.stop": "停止",
+    "trn.card_bpm": "当前 BPM",
+    "trn.card_ur": "间隔 UR",
+    "trn.card_drift": "漂移，毫秒",
+    "trn.card_left": "剩余秒数",
+    "trn.plot_title": "按键间隔",
+    "trn.plot_x": "第几次按键",
+    "trn.plot_y": "毫秒",
+    "trn.idle": "设定速度后点击「开始」。",
+    "trn.count_in": "预备…",
+    "trn.count_in_left": "预备：{n}",
+    "trn.no_device": "无法开始按键捕获：{message}",
+    "trn.too_few": "按键次数太少，无法判断。",
+    "trn.result_held": (
+        "维持住了。{bpm:.0f} BPM，目标 {target:.0f}，UR {ur:.0f}，"
+        "{taps} 次按键，减速 {slowdown:+.0f} BPM，交替 {alt:.0f}%，"
+        "掉拍 {dropped} 次。"),
+    "trn.result_missed": (
+        "没有维持住。{bpm:.0f} BPM，目标 {target:.0f}，UR {ur:.0f}，"
+        "{taps} 次按键，减速 {slowdown:+.0f} BPM，交替 {alt:.0f}%，"
+        "掉拍 {dropped} 次。"),
 }

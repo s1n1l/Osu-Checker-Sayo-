@@ -14,6 +14,7 @@ from .episodes import Episode, find_episodes
 from .judge import JudgeResult, judge_replay
 from .recommend import Finding, build_findings
 from .streams import BpmBucket, Section, analyse_sections, bucket_by_bpm
+from .tapping import TapStats, analyse_tapping
 from .training import Exercise, build_plan
 
 
@@ -26,6 +27,7 @@ class Analysis:
     buckets: list[BpmBucket] = field(default_factory=list)
     findings: list[Finding] = field(default_factory=list)
     aim: AimResult | None = None
+    tapping: TapStats | None = None
     episodes: list[Episode] = field(default_factory=list)
     plan: list[Exercise] = field(default_factory=list)
     error_key: str | None = None
@@ -81,6 +83,7 @@ def analyse(path: str | Path, index: BeatmapIndex,
     a.sections = analyse_sections(a.beatmap, a.judge)
     a.buckets = bucket_by_bpm(a.sections)
     a.aim = analyse_aim(a.beatmap, rp, a.judge)
+    a.tapping = analyse_tapping(rp, a.judge)
     a.episodes = find_episodes(a.beatmap, a.judge, a.sections, a.aim)
     a.findings = build_findings(a.beatmap, rp, a.judge, a.sections,
                                 a.buckets, device=device)

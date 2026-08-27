@@ -17,12 +17,16 @@ from PySide6.QtWidgets import (
 from ..analysis.episodes import (CAUSE_AIM, CAUSE_EARLY, CAUSE_LATE,
                                  CAUSE_SCATTER)
 from ..analysis.pipeline import Analysis, analyse
+from ..analysis.tapping import interval_histogram
 from ..analysis.training import find_practice_maps, scan_maps
 from ..config import Config
 from ..i18n import LANGUAGES, set_language, t
 from ..paths import resource_path
 from ..recorder import Session, SessionRecorder
 from ..replay.index import BeatmapIndex
+from . import theme
+from .playback import PlaybackView
+from .trainer import TrainerTab
 
 ASSETS = resource_path("assets")
 COL_LEFT = "#4da3ff"
@@ -259,17 +263,21 @@ class AimView(QWidget):
         self.plot = pg.PlotWidget(title=t("aim.plot_title"))
         self.plot.setAspectLocked(True)
         self.plot.setLabel("bottom", t("aim.axis_px"))
+        for name in ("left", "bottom"):
+            self.plot.getAxis(name).enableAutoSIPrefix(False)
         lay.addWidget(self.plot, 3)
 
         side = QWidget()
         col = QVBoxLayout(side)
         self.summary = QTextBrowser()
-        self.summary.setMaximumHeight(210)
+        self.summary.setMinimumHeight(230)
+        self.summary.setMaximumHeight(280)
         col.addWidget(self.summary)
         col.addWidget(QLabel(t("aim.by_jump")))
         self.by_jump = make_table(
             [t("aim.col_jump"), t("aim.col_notes"), t("aim.col_spread"),
-             t("aim.col_edge"), t("aim.col_over"), t("aim.col_over_pct")])
+             t("aim.col_edge"), t("aim.col_over"), t("aim.col_over_pct"),
+             t("aim.col_speed"), t("aim.col_settle")])
         col.addWidget(self.by_jump)
         col.addWidget(QLabel(t("aim.by_dir")))
         self.by_dir = make_table(
@@ -300,6 +308,9 @@ class AimView(QWidget):
         self.plot.addItem(pg.ScatterPlotItem(
             [bias_x], [-bias_y], size=16, symbol="+",
             pen=pg.mkPen("#ffe066", width=3)))
+        span = radius * 2.5
+        self.plot.setXRange(-span, span, padding=0)
+        self.plot.setYRange(-span, span, padding=0)
 
         self.summary.setHtml(
             f"<p><b>{t('aim.radius')}:</b> {radius:.1f} px</p>"
@@ -311,14 +322,21 @@ class AimView(QWidget):
             f"<b>{t('aim.edge')}:</b> {aim.edge_rate * 100:.1f}%<br>"
             f"<b>{t('aim.overshoot')}:</b> "
             f"{t('aim.overshoot_value', px=aim.mean_overshoot, pct=aim.overshoot_rate * 100)}"
-            f"</p>")
+            f"</p>"
+            f"<p><b>{t('aim.speed')}:</b> "
+            f"{t('aim.speed_value', v=aim.mean_speed)}<br>"
+            f"<b>{t('aim.settle')}:</b> {aim.median_settle:.0f} ms<br>"
+            f"<b>{t('aim.on_arrival')}:</b> "
+            f"{aim.on_arrival_rate * 100:.0f}%<br>"
+            f"<span style='color:#9a9a9a'>{t('aim.on_arrival_hint')}</span></p>")
 
         rows, colors = [], {}
         for i, b in enumerate(aim.by_jump_size()):
             high = "∞" if b["hi"] > 1e8 else f"{b['hi']:.0f}"
             rows.append([f"{b['lo']:.0f}–{high}", b["n"], f"{b['spread']:.2f}",
                          f"{b['edge_rate'] * 100:.1f}%", f"{b['overshoot']:.1f}",
-                         f"{b['overshoot_rate'] * 100:.0f}%"])
+                         f"{b['overshoot_rate'] * 100:.0f}%",
+                         f"{b['speed']:.2f}", f"{b['settle']:.0f}"])
             if b["edge_rate"] > 0.12:
                 colors[(i, 3)] = SEV_COLOR["high"]
             if b["overshoot_rate"] > 0.30:
@@ -354,6 +372,100 @@ class EpisodesView(QWidget):
                          e.n_notes, e.loss_label, e.cause_label, e.what])
             colors[(i, 4)] = CAUSE_COLOR.get(e.cause, "#cccccc")
         fill_table(self.table, rows, colors)
+
+
+class TappingView(QWidget):
+    def __init__(self):
+        super().__init__()
+        lay = QHBoxLayout(self)
+
+        left = QWidget()
+        col = QVBoxLayout(left)
+        self.cards = QGridLayout()
+        col.addLayout(self.cards)
+        self.runs = make_table([t("tap.col_run"), t("tap.col_count")], 220)
+        col.addWidget(QLabel(t("tap.runs_title")))
+        col.addWidget(self.runs)
+        col.addStretch(1)
+        lay.addWidget(left, 2)
+
+        right = QWidget()
+        rcol = QVBoxLayout(right)
+        self.hist = pg.PlotWidget(title=t("tap.hist_title"))
+        self.hist.setLabel("bottom", t("tap.hist_x"))
+        for name in ("left", "bottom"):
+            self.hist.getAxis(name).enableAutoSIPrefix(False)
+        rcol.addWidget(self.hist, 1)
+        self.roll = pg.PlotWidget(title=t("tap.roll_title"))
+        self.roll.setLabel("left", t("tap.roll_y"), color=COL_LEFT)
+        self.roll.setLabel("bottom", t("plot.timeline_x"))
+        for name in ("left", "bottom"):
+            self.roll.getAxis(name).enableAutoSIPrefix(False)
+        plot_item = self.roll.getPlotItem()
+        plot_item.showAxis("right")
+        plot_item.getAxis("right").setLabel(t("tap.roll_y2"), color=COL_RIGHT)
+        plot_item.getAxis("right").enableAutoSIPrefix(False)
+        self.roll_right = pg.ViewBox()
+        plot_item.scene().addItem(self.roll_right)
+        plot_item.getAxis("right").linkToView(self.roll_right)
+        self.roll_right.setXLink(plot_item)
+        plot_item.vb.sigResized.connect(self._sync_roll_axes)
+        rcol.addWidget(self.roll, 1)
+        lay.addWidget(right, 3)
+
+    def _sync_roll_axes(self):
+        plot_item = self.roll.getPlotItem()
+        self.roll_right.setGeometry(plot_item.vb.sceneBoundingRect())
+        self.roll_right.linkedViewChanged(plot_item.vb, self.roll_right.XAxis)
+
+    def render(self, a: Analysis):
+        while self.cards.count():
+            item = self.cards.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self.hist.clear()
+        self.roll.clear()
+        self.roll_right.clear()
+        self.runs.setRowCount(0)
+
+        stats = a.tapping
+        if stats is None or not stats.intervals:
+            self.cards.addWidget(QLabel(t("tap.no_data")), 0, 0)
+            return
+
+        entries = [
+            (t("tap.hold"), t("tap.hold_value", ms=stats.median_hold,
+                              spread=stats.hold_spread), ""),
+            (t("tap.hand_gap"), f"{stats.hand_hold_gap:+.0f} ms", ""),
+            (t("tap.alternation"), f"{stats.alternation * 100:.0f}%", ""),
+            (t("tap.single"), f"{stats.single_tap_share * 100:.0f}%", ""),
+            (t("tap.max_bpm"), f"{stats.max_sustained_bpm:.0f}", ""),
+            (t("tap.fatigue"), f"{stats.fatigue:+.0f} UR",
+             t("tap.fatigue_hint")),
+            (t("tap.repeats"), f"{stats.fast_repeats}", ""),
+        ]
+        for i, (title, value, hint) in enumerate(entries):
+            self.cards.addWidget(stat_box(title, value, hint), i // 2, i % 2)
+
+        centers, counts = interval_histogram(stats)
+        if centers:
+            self.hist.addItem(pg.PlotCurveItem(
+                centers, counts, pen=pg.mkPen(COL_LEFT, width=2), fillLevel=0,
+                brush=pg.mkBrush(QColor(COL_LEFT).darker(220))))
+
+        if stats.rolling:
+            xs = [r[0] / 1000.0 for r in stats.rolling]
+            self.roll.addItem(pg.PlotCurveItem(
+                xs, [r[1] for r in stats.rolling],
+                pen=pg.mkPen(COL_LEFT, width=2)))
+            self.roll_right.addItem(pg.PlotCurveItem(
+                xs, [r[2] for r in stats.rolling],
+                pen=pg.mkPen(COL_RIGHT, width=1, style=Qt.DashLine)))
+            self._sync_roll_axes()
+
+        rows = [[length, count]
+                for length, count in sorted(stats.same_hand_runs.items())]
+        fill_table(self.runs, rows)
 
 
 class AnalysisTab(QWidget):
@@ -400,10 +512,14 @@ class AnalysisTab(QWidget):
         self.views = QTabWidget()
         self.overview = OverviewView()
         self.aim = AimView()
+        self.tapping = TappingView()
         self.episodes = EpisodesView()
+        self.playback = PlaybackView()
         self.views.addTab(self.overview, t("view.overview"))
         self.views.addTab(self.aim, t("view.aim"))
+        self.views.addTab(self.tapping, t("view.tapping"))
         self.views.addTab(self.episodes, t("view.episodes"))
+        self.views.addTab(self.playback, t("view.playback"))
         root.addWidget(self.views, 1)
 
     def pick(self):
@@ -493,7 +609,9 @@ class AnalysisTab(QWidget):
 
         self.overview.render(a)
         self.aim.render(a)
+        self.tapping.render(a)
         self.episodes.render(a)
+        self.playback.set_analysis(a)
         self.analysed.emit(a)
 
 
@@ -856,6 +974,7 @@ class MainWindow(QMainWindow):
         settings_tab.language_changed.connect(self.change_language)
         tabs.addTab(self.analysis_tab, t("tab.analysis"))
         tabs.addTab(RecordTab(self.cfg), t("tab.record"))
+        tabs.addTab(TrainerTab(self.cfg), t("tab.trainer"))
         tabs.addTab(self.training_tab, t("tab.training"))
         tabs.addTab(settings_tab, t("tab.settings"))
         self.setCentralWidget(tabs)
@@ -884,20 +1003,9 @@ def run():
     app = QApplication([])
     app.setApplicationName("osu-checker")
     app.setWindowIcon(app_icon())
-    app.setStyle("Fusion")
-    palette = QPalette()
-    palette.setColor(QPalette.Window, QColor("#232323"))
-    palette.setColor(QPalette.WindowText, QColor("#e6e6e6"))
-    palette.setColor(QPalette.Base, QColor("#1b1b1b"))
-    palette.setColor(QPalette.AlternateBase, QColor("#262626"))
-    palette.setColor(QPalette.Text, QColor("#e6e6e6"))
-    palette.setColor(QPalette.Button, QColor("#2e2e2e"))
-    palette.setColor(QPalette.ButtonText, QColor("#e6e6e6"))
-    palette.setColor(QPalette.Highlight, QColor("#4da3ff"))
-    palette.setColor(QPalette.HighlightedText, QColor("#101010"))
-    app.setPalette(palette)
-    pg.setConfigOption("background", "#1b1b1b")
-    pg.setConfigOption("foreground", "#c8c8c8")
+    theme.apply(app)
+    pg.setConfigOption("background", theme.BG_INPUT)
+    pg.setConfigOption("foreground", "#b9bec6")
     window = MainWindow()
     window.show()
     app.exec()

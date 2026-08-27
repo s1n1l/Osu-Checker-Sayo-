@@ -20,6 +20,8 @@ class Config:
     release_um: int = 400
     analog_hz: float = 1500.0
     language: str = "en"
+    train_bpm: float = 180.0
+    train_seconds: float = 30.0
 
     @staticmethod
     def load(path: str | Path = CONFIG_PATH) -> "Config":

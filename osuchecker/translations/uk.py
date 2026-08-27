@@ -69,7 +69,7 @@ STRINGS = {
     "aim.col_spread": "розкид",
     "aim.col_edge": "краєм",
     "aim.col_over": "переїзд",
-    "aim.col_over_pct": "% переїзд",
+    "aim.col_over_pct": "% пере.",
     "aim.col_dir": "напрям",
     "aim.no_data": "Немає даних курсора в цьому реплеї.",
     "aim.radius": "Радіус ноти",
@@ -330,4 +330,73 @@ STRINGS = {
     "tr.ex.early.why": "У {n} епізодах ти стабільно поспішав.",
     "tr.ex.early.how": "Свідомо починати стрім «пізніше, ніж хочеться».",
     "tr.ex.early.check": "Середня похибка цих ділянок у межах ±5 мс.",
+
+    "tab.trainer": "Тренажер",
+    "view.playback": "Перегляд",
+    "view.tapping": "Стук",
+
+    "pb.play": "Пуск",
+    "pb.pause": "Пауза",
+    "pb.jump_placeholder": "Перейти до проблемного місця…",
+    "pb.distance": "курсор за {px:.0f} px від центра ({frac:.2f} радіуса)",
+    "pb.error": "влучив {ms:+.0f} мс",
+    "pb.miss": "ПРОМАХ",
+    "pb.extra": "зайвий натиск",
+
+    "tap.hold": "Час утримання",
+    "tap.hold_value": "{ms:.0f} мс, розкид {spread:.0f}",
+    "tap.hand_gap": "Різниця утримання між руками",
+    "tap.alternation": "Чергування рук",
+    "tap.single": "Два і більше поспіль однією рукою",
+    "tap.max_bpm": "Найшвидший утриманий темп",
+    "tap.fatigue": "Втома",
+    "tap.fatigue_hint": "приріст UR на стрімах, перша третина проти останньої",
+    "tap.repeats": "Повтори швидше 45 мс тією ж клавішею",
+    "tap.hist_title": "Інтервал між натисками",
+    "tap.hist_x": "інтервал, мс",
+    "tap.roll_title": "Темп і рівність протягом карти",
+    "tap.roll_y": "BPM",
+    "tap.roll_y2": "UR",
+    "tap.runs_title": "Скільки натисків поспіль однією рукою",
+    "tap.col_run": "поспіль",
+    "tap.col_count": "разів",
+    "tap.no_data": "У цьому реплеї замало натискань.",
+
+    "aim.speed": "Швидкість курсора в момент натиску",
+    "aim.speed_value": "{v:.2f} px/мс",
+    "aim.settle": "Був у колі до натиску",
+    "aim.on_arrival": "Натиснуто «з ходу»",
+    "aim.on_arrival_hint": "стрибків, де клік стався до зупинки курсора",
+    "aim.col_speed": "швидкість",
+    "aim.col_settle": "осідання",
+
+    "trn.info": (
+        "Тримай темп і дивись, як він розсипається. Метроном клацає раз на "
+        "долю, а між клацаннями очікується чотири натиски — саме так рахують "
+        "стрім на цьому BPM. Натиски читаються тільки з O3C."),
+    "trn.target_bpm": "Цільовий BPM:",
+    "trn.duration": "Тривалість, с:",
+    "trn.sound": "Звук метронома",
+    "trn.start": "Почати",
+    "trn.stop": "Зупинити",
+    "trn.card_bpm": "поточний BPM",
+    "trn.card_ur": "UR інтервалів",
+    "trn.card_drift": "дрейф, мс",
+    "trn.card_left": "секунд лишилось",
+    "trn.plot_title": "Інтервал між натисками",
+    "trn.plot_x": "натиск",
+    "trn.plot_y": "мс",
+    "trn.idle": "Постав темп і натисни «Почати».",
+    "trn.count_in": "Відлік…",
+    "trn.count_in_left": "відлік: {n}",
+    "trn.no_device": "Не вдалось почати захват клавіш: {message}",
+    "trn.too_few": "Замало натискань, щоб про щось судити.",
+    "trn.result_held": (
+        "Витримав. {bpm:.0f} BPM при цілі {target:.0f}, UR {ur:.0f}, "
+        "{taps} натисків, просідання {slowdown:+.0f} BPM, чергування "
+        "{alt:.0f}%, провалів: {dropped}."),
+    "trn.result_missed": (
+        "Не витримав. {bpm:.0f} BPM при цілі {target:.0f}, UR {ur:.0f}, "
+        "{taps} натисків, просідання {slowdown:+.0f} BPM, чергування "
+        "{alt:.0f}%, провалів: {dropped}."),
 }
