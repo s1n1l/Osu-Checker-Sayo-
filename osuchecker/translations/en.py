@@ -70,7 +70,7 @@ STRINGS = {
     "aim.col_spread": "spread",
     "aim.col_edge": "edge hits",
     "aim.col_over": "overshoot",
-    "aim.col_over_pct": "% overshoot",
+    "aim.col_over_pct": "% over",
     "aim.col_dir": "direction",
     "aim.no_data": "This replay has no cursor data.",
     "aim.radius": "Circle radius",
@@ -131,7 +131,7 @@ STRINGS = {
                     "points {cursor}"),
     "rec.failed": "Could not start: {message}",
     "rec.no_analog": "   (no analogue data — device not found)",
-    "rec.key": "key {name}",
+    "rec.key": "slot {n} · {name}",
     "rec.saved": "Saved: {path}",
     "rec.depth_head": ("Device thresholds: actuation {trigger:.2f} mm, "
                        "release {release:.2f} mm"),
@@ -147,9 +147,6 @@ STRINGS = {
     "tr.none": "This replay did not produce any exercises — everything is "
                "within normal range.",
     "tr.priority": "PRIORITY {n}",
-    "tr.why": "why:",
-    "tr.how": "how:",
-    "tr.check": "check:",
     "tr.scan": "Find maps in my collection",
     "tr.target_bpm": "target BPM:",
     "tr.index_empty": "The beatmap index is empty — build it in Settings.",
@@ -333,4 +330,344 @@ STRINGS = {
     "tr.ex.early.why": "In {n} spots you were consistently early.",
     "tr.ex.early.how": "Deliberately start streams later than feels right.",
     "tr.ex.early.check": "Mean error on those stretches within ±5 ms.",
+
+    "tab.trainer": "Trainer",
+    "view.playback": "Playback",
+    "view.tapping": "Tapping",
+
+    "pb.play": "Play",
+    "pb.pause": "Pause",
+    "pb.jump_placeholder": "Jump to a problem spot…",
+    "pb.distance": "cursor {px:.0f} px from centre ({frac:.2f} radius)",
+    "pb.error": "hit {ms:+.0f} ms",
+    "pb.miss": "MISS",
+    "pb.extra": "extra press",
+
+    "tap.hold": "Hold time",
+    "tap.hold_value": "{ms:.0f} ms",
+    "tap.hold_spread": "spread {spread:.0f} ms",
+    "tap.hand_gap": "Hold difference between hands",
+    "tap.alternation": "Alternation",
+    "tap.single": "Two or more in a row on one hand",
+    "tap.max_bpm": "Fastest sustained tempo",
+    "tap.fatigue": "Fatigue",
+    "tap.fatigue_hint": "UR growth on stream sections, first third to last",
+    "tap.repeats": "Repeats under 45 ms on the same key",
+    "tap.hist_title": "Interval between presses",
+    "tap.hist_x": "interval, ms",
+    "tap.roll_title": "Tempo and steadiness over the map",
+    "tap.roll_y": "BPM",
+    "tap.roll_y2": "UR",
+    "tap.runs_title": "How many presses in a row on one hand",
+    "tap.col_run": "in a row",
+    "tap.col_count": "times",
+    "tap.no_data": "Not enough presses in this replay.",
+
+    "aim.speed": "Cursor speed at the press",
+    "aim.speed_value": "{v:.2f} px/ms",
+    "aim.settle": "Settled in the circle before the press",
+    "aim.on_arrival": "Clicked on arrival",
+    "aim.on_arrival_hint": "jumps clicked before the cursor settled",
+    "aim.col_speed": "speed",
+    "aim.col_settle": "settle",
+
+    "trn.info": (
+        "Pick a pattern and a tempo: the notes travel to the line and you "
+        "answer them. This is not a metronome — there are rests in it, and "
+        "entering a run after a rest is what usually costs points. The "
+        "metronome still clicks the beat underneath. Presses are read from "
+        "the O3C only."),
+    "trn.target_bpm": "Target BPM:",
+    "trn.duration": "Duration, s:",
+    "trn.sound": "Metronome sound",
+    "trn.start": "Start",
+    "trn.stop": "Stop",
+    "trn.card_bpm": "current BPM",
+    "trn.card_ur": "UR",
+    "trn.card_drift": "drift, ms",
+    "trn.card_left": "seconds left",
+    "trn.plot_title": "Interval between presses",
+    "trn.plot_x": "press",
+    "trn.plot_y": "ms",
+    "trn.idle": "Set a tempo and press Start.",
+    "trn.count_in": "Count-in…",
+    "trn.count_in_left": "count-in: {n}",
+    "trn.no_device": "Could not start key capture: {message}",
+    "trn.too_few": "Too few presses to judge anything.",
+    "trn.result_held": (
+        "Held it. {hits}/{notes} notes ({acc:.0f}%), hit error {error:+.1f} ms, UR {ur:.0f}, {misses} missed, {extras} extra presses, alternation {alt:.0f}%, around {bpm:.0f} BPM against a target of {target:.0f}."),
+    "trn.result_missed": (
+        "Not held. {hits}/{notes} notes ({acc:.0f}%), hit error {error:+.1f} ms, UR {ur:.0f}, {misses} missed, {extras} extra presses, alternation {alt:.0f}%, around {bpm:.0f} BPM against a target of {target:.0f}."),
+
+    # --- overview -------------------------------------------------------
+    "ov.findings_title": "What we found",
+    "ov.summary": "{high} to fix · {medium} worth knowing · {info} "
+                  "for reference",
+    "ov.fix": "Fix:",
+    "ov.legend_title": "How to read this page",
+    "ov.legend_body": (
+        "<b>Hit error</b> — how far a press was from its note, in "
+        "milliseconds. Minus is early, plus is late. One number for a whole "
+        "map hides a lot, which is why the table on the right splits it by "
+        "tempo.<br><br>"
+        "<b>UR</b> — the spread of those errors (ten times their standard "
+        "deviation). Lower is steadier: under 150 is tight, over 250 is "
+        "loose. It says nothing about early or late, only about how much "
+        "you vary.<br><br>"
+        "<b>Left and right</b> — the two keys measured apart. A steady "
+        "difference between them is a habit, not a device fault: both keys "
+        "have the same thresholds.<br><br>"
+        "<b>Drift</b> — how much the error grows from the start of a stream "
+        "to its end. Past about 8 ms the hand is not holding the tempo: the "
+        "notes keep coming and the hand falls behind.<br><br>"
+        "<b>Extras</b> — presses that landed on no note at all. Many extras "
+        "with little drift is the opposite problem: the fingers are adding "
+        "taps rather than running out of speed. Presses during spinners are "
+        "not counted here.<br><br>"
+        "<b>Misses</b> — notes with no press anywhere inside the 50 "
+        "window.<br><br>"
+        "<b>300 / 100 / 50 / miss</b> — counted here from the replay against "
+        "the beatmap, so a note or two of difference from the score screen "
+        "is normal.<br><br>"
+        "<b>Severity.</b> IMPORTANT is something to change; WORTH KNOWING "
+        "is a real effect that is not costing you much yet; FOR REFERENCE "
+        "is a measurement with no action attached."),
+    "ov.table_title": "Broken down by tempo",
+    "ov.table_hint": "Every stretch of steady spacing in the map, grouped "
+                     "into 10 BPM steps. Drift and extras are the two "
+                     "columns that tell lack of speed apart from surplus "
+                     "taps.",
+    "plot.hist_hint": "Green dashes are the edge of the 300 window, amber "
+                      "the 100. A hill sitting off the centre line is an "
+                      "offset; a wide flat hill is scatter.",
+    "plot.timeline_hint": "One dot per note, blue left hand, pink right. "
+                          "Bands drifting upwards are stretches where the "
+                          "hand fell behind.",
+
+    # --- replay to beatmap alignment ------------------------------------
+    "align.suspect": (
+        "This replay and this beatmap do not line up — only {pct:.0f}% of "
+        "notes have a press anywhere near them. Hit error, aim and playback "
+        "below are unreliable. Usually the .osu file was edited after the "
+        "play, or the replay is of a different game mode."),
+    "align.corrected": (
+        "The replay clock was {sec:+.2f} s out against the beatmap and has "
+        "been corrected — {pct:.0f}% of notes line up now. osu!stable writes "
+        "the first replay frame on a different clock on some plays, and "
+        "taken literally it shifts everything by the whole lead-in."),
+    "align.searched": (
+        "Neither reading of this replay's clock fitted the beatmap, so the "
+        "offset was searched for: at {sec:+.2f} s, {pct:.0f}% of notes line "
+        "up, and that is what is shown below. It is a guess that fits, not "
+        "something the file says — treat the numbers with care."),
+    "align.suspect_playback": (
+        "The cursor will not follow the notes here: replay and beatmap "
+        "agree on only {pct:.0f}% of notes."),
+    "align.corrected_playback": (
+        "Replay clock corrected by {sec:+.2f} s so the cursor lines up with "
+        "the notes."),
+
+    # --- aim ------------------------------------------------------------
+    "aim.summary_title": "Numbers",
+    "aim.help_title": "Reading the scatter",
+    "aim.help_body": (
+        "Every dot is one note, drawn where the cursor was relative to the "
+        "centre of that note. Up on the plot is up on the playfield.<br><br>"
+        "<b>The blue ring</b> is the circle itself at this map's CS. "
+        "<b>The dashed ring</b> sits at 0.75 of the radius — dots past it "
+        "are edge hits, the ones a small mistake turns into a miss. "
+        "<b>The yellow cross</b> is your average dot: if it sits off centre, "
+        "your aim is biased in that direction.<br><br>"
+        "<b>Dots outside the blue ring are not misses.</b> A replay stores "
+        "the cursor only once per frame, so the position used is the one "
+        "written nearest the press. On a fast jump the cursor covers a lot "
+        "of ground between two frames, and a note hit cleanly can still be "
+        "drawn outside the ring. That is why the share outside is shown "
+        "next to how far the cursor travels in a single frame: if the frame "
+        "rate is low, that share is the recording rather than your aim. "
+        "With a high frame rate and a large share, you really are clicking "
+        "before the cursor has arrived.<br><br>"
+        "<b>Colour</b> is the judgement of the note — blue 300, green 100, "
+        "amber 50. Misses are not drawn: there is no press to place them "
+        "at. Notes played during a spinner are left out, because a spinner "
+        "drags the cursor round the edge of the field."),
+    "aim.plot_legend": "blue ring — the circle · dashed ring — 0.75 of the "
+                       "radius · yellow cross — your average hit · dot "
+                       "colour — 300 / 100 / 50",
+    "aim.spread_hint": "mean distance from the centre; under 0.40 is tight, "
+                       "over 0.60 means most notes are caught near the edge",
+    "aim.edge_hint": "notes caught past 0.75 of the radius — the first ones "
+                     "to become misses when the tempo rises",
+    "aim.outside": "Outside the circle",
+    "aim.outside_hint": "on those notes the cursor was covering about "
+                        "{px:.0f} px per replay frame ({ms:.0f} ms), and its "
+                        "position is interpolated between frames — enough on "
+                        "its own to draw a clean hit just outside. A press "
+                        "matched to a note by time alone can also land "
+                        "anywhere, where osu! would have wanted the cursor "
+                        "inside.",
+    "aim.overshoot_hint": "how far past the note the cursor ran before "
+                          "coming back — braking late costs both accuracy "
+                          "and time",
+    "aim.by_jump_hint": "the same numbers split by how far the cursor had "
+                        "to travel to reach the note",
+    "aim.by_dir_hint": "→ is a jump to the right. One direction clearly "
+                       "worse than the rest is usually grip or where the "
+                       "device sits on the desk.",
+
+    # --- problem spots --------------------------------------------------
+    "ep.causes_hint": "fell behind — the error grew inside the stream · "
+                      "rushed — consistently early · scatter — the centre "
+                      "is fine but the spread is wide · aim — the cursor, "
+                      "not the hands",
+
+    # --- tapping --------------------------------------------------------
+    "tap.help_title": "How to read this",
+    "tap.help_body": (
+        "These numbers describe the presses themselves, not how close they "
+        "were to the notes — a hand can be perfectly even and still play "
+        "the wrong rhythm.<br><br>"
+        "<b>Alternation</b> near 100% means the hands took turns properly. "
+        "Every run of two or more on one hand is a moment one hand carried "
+        "the stream alone, which is where tempo is usually lost.<br><br>"
+        "<b>Fastest sustained tempo</b> is the quickest sixteen presses in "
+        "a row anywhere in the map, read as stream BPM. It is a ceiling, "
+        "not something you can hold.<br><br>"
+        "<b>Fatigue</b> compares UR in the first third of the map to the "
+        "last, counting only stretches at stream tempo. A large positive "
+        "number means the hands came apart as the map went on.<br><br>"
+        "<b>Repeats under 45 ms</b> on the same key are faster than a "
+        "finger can move. Anything above zero points at the switch or at "
+        "Rapid Trigger, not at you."),
+    "tap.hold_hint": "how long a key stays down; the spread matters more "
+                     "than the value itself",
+    "tap.hand_gap_hint": "left hold minus right hold",
+    "tap.alternation_hint": "share of presses that changed hand",
+    "tap.single_hint": "share of presses where one hand went twice or more "
+                       "in a row",
+    "tap.max_bpm_hint": "fastest sixteen presses in a row, as stream BPM",
+    "tap.repeats_hint": "the same key twice inside 45 ms — the signature of "
+                        "double actuation",
+    "tap.runs_hint": "1 means the hands alternated; 2 or more means one "
+                     "hand tapped several notes on its own",
+    "tap.hist_hint": "each peak is one note spacing used by the map; the "
+                     "tallest is the tempo you spent the most time at",
+    "tap.roll_hint": "blue — the tempo of your presses, pink — how uneven "
+                     "they were at that point",
+
+    # --- playback -------------------------------------------------------
+    "pb.keys_hint": "Space — play / pause · ← → — one second · Shift + ← → "
+                    "— five seconds · click the strip above to jump",
+    "pb.legend": "white dot — the cursor, ringed while a key is held · "
+                 "blue and pink dots on the trail — where each press "
+                 "landed, left and right · red ring — a press on no note · "
+                 "yellow trail — the last 0.4 s · red dashes — from the "
+                 "cursor to the note being judged · circle colour — "
+                 "300 / 100 / 50 / miss",
+
+    # --- recording ------------------------------------------------------
+    "rec.controls_title": "Recording",
+    "rec.keys_hint": "Watching keys: {keys} — change them in Settings",
+    "rec.travel_title": "Key travel, live",
+    "rec.travel_hint": "0 at rest, 4000 µm with the switch at the bottom",
+    "rec.depth_title": "How deep you actually press",
+    "rec.depth_hint": "Taken after the recording from the analogue samples "
+                      "inside each press. The margin column is what is left "
+                      "between your weakest presses and the actuation "
+                      "point.",
+
+    # --- training plan --------------------------------------------------
+    "tr.head_title": "Training plan",
+    "tr.head_body": "{n} things came out of this replay. Start with: "
+                    "{first}",
+    "tr.problem": "What is wrong",
+    "tr.drill": "What to play",
+    "tr.target": "Done when",
+    "tr.open_trainer": "Practise at {bpm:.0f} BPM",
+    "tr.maps_title": "Maps in your collection",
+    "tr.maps_hint": "Streams at the target tempo, taken from the beatmaps "
+                    "in the index.",
+
+    # --- settings -------------------------------------------------------
+    "set.general_title": "General",
+    "set.keys_title": "Device keys",
+    "set.keys_hint": "Press the button, then press the key on your device. "
+                     "Only these keys are recorded — nothing else you type "
+                     "is ever seen. Esc cancels.",
+    "set.key_slot": "Slot {n}",
+    "set.key_slot_hint": "analogue channel {n}",
+    "set.key_prompt": "press a key…",
+    "set.key_taken": "{key} is already bound to another slot",
+    "set.keys_now": "Bound: {keys}",
+    "set.thresholds_title": "Device thresholds",
+    "set.thresholds_hint": "The actuation and release points set in the "
+                           "SayoDevice configurator. Nothing is written to "
+                           "the device: these are only used to work out how "
+                           "much margin your presses leave.",
+    "set.trigger": "Actuation",
+    "set.release": "Release",
+    "set.paths_title": "Folders and beatmap index",
+    "set.paths_hint": "Where replays and beatmaps live. The index is what "
+                      "turns a replay into the .osu file it was played on.",
+
+    # --- trainer --------------------------------------------------------
+    "trn.controls_title": "Settings",
+    "trn.keys_hint": "Reading keys: {keys} — change them in Settings",
+    "trn.card_bpm_hint": "over the last sixteen presses",
+    "trn.card_ur_hint": "spread of the hit error, as the game counts it",
+    "trn.card_drift_hint": "how far the tempo sits from the target",
+    "trn.card_left_hint": "seconds remaining",
+    "trn.plot_hint": "the green line is the interval the target BPM asks "
+                     "for; each dot is one press",
+
+    "unit.ms": "ms",
+    "trn.result_noise": ("{n} of {total} gaps were under {ms:.0f} ms — closer together than a hand can tap, and left out. The app kept up throughout, so this is the switch bouncing: raise RT Release in the SayoDevice configurator."),
+    "trn.result_stalled": ("{n} of {total} gaps were under {ms:.0f} ms and were left out. This machine stalled {stalls} times while reading your presses, worst {worst} ms, so some of those are presses that arrived together rather than doubles you made. Close what else is running and try again."),
+
+    # --- trainer patterns -----------------------------------------------
+    "trn.pattern": "Pattern:",
+    "trn.pat.stream": "Continuous stream",
+    "trn.pat.stream_hint": "No rests at all. Trains stamina and nothing "
+                           "else — useful, but it is not what a map asks "
+                           "of you.",
+    "trn.pat.long": "Long streams",
+    "trn.pat.long_hint": "Sixteen notes, then two beats of rest. Long "
+                         "enough for the hand to start drifting, short "
+                         "enough to recover between them.",
+    "trn.pat.burst": "Bursts",
+    "trn.pat.burst_hint": "Runs of five to nine notes with a beat and a "
+                          "half between them, in a shuffled order so you "
+                          "cannot learn the shape. This is the one that "
+                          "shows whether you enter a burst on time.",
+    "trn.pat.triple": "Triples",
+    "trn.pat.triple_hint": "Three notes, one beat of rest, repeat. Short "
+                           "enough that the whole run is the entry.",
+    "trn.pat.double": "Doubles",
+    "trn.pat.double_hint": "Two notes, one beat of rest, repeat. The "
+                           "hardest thing to keep clean, because there is "
+                           "no run to settle into.",
+    "trn.pat.mixed": "Mixed",
+    "trn.pat.mixed_hint": "Anything from one note to eight, in random "
+                          "order. Closest to an actual map.",
+
+    "trn.lane_idle": "The rhythm appears here once you start",
+    "trn.lane_hint": "Notes travel to the white line — press as each one "
+                     "crosses it. The larger blue circle opens a run. "
+                     "Green, amber, red is how close you were; a dotted "
+                     "red circle is a note nothing answered. The ticks "
+                     "underneath are your presses, blue for the left key, "
+                     "pink for the right.",
+
+    "trn.card_error": "hit error",
+    "trn.card_error_hint": "minus early / plus late, against the rhythm",
+    "trn.card_hits": "hits",
+    "trn.card_hits_hint": "notes answered, out of those gone past",
+
+    "trn.result_opener_late": "Runs are entered {gap:.0f} ms later than "
+                              "they are carried — the tempo is there, the "
+                              "start is not. Come in earlier than feels "
+                              "right after a rest.",
+    "trn.result_opener_early": "Runs are entered {gap:.0f} ms earlier than "
+                               "they are carried — you are jumping the "
+                               "rest, then holding on.",
 }

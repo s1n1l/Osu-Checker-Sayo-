@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..replay.beatmap import Beatmap, HitObject
-from ..replay.osr import KeyEvent, ParsedReplay
+from ..replay.osr import ParsedReplay
 
 JUDGE_300, JUDGE_100, JUDGE_50, JUDGE_MISS = "300", "100", "50", "miss"
 
@@ -39,6 +39,7 @@ class JudgeResult:
     extras: list[ExtraPress] = field(default_factory=list)
     windows: dict[str, float] = field(default_factory=dict)
     rate: float = 1.0
+    spinner_presses: int = 0
 
     def counts(self) -> dict[str, int]:
         c = {JUDGE_300: 0, JUDGE_100: 0, JUDGE_50: 0, JUDGE_MISS: 0}
@@ -56,6 +57,11 @@ def judge_replay(bm: Beatmap, rp: ParsedReplay) -> JudgeResult:
     res = JudgeResult(windows=w, rate=Beatmap.rate(rp.mods))
 
     objs = [o for o in bm.hit_objects if o.kind in ("circle", "slider")]
+    spinners = [(o.time - w["50"], o.end_time + w["50"])
+                for o in bm.hit_objects if o.kind == "spinner"]
+    if rp.frames:
+        played_until = rp.frames[-1][0] + w["50"]
+        objs = [o for o in objs if o.time <= played_until]
     presses = sorted([e for e in rp.key_events if e.key in ("left", "right")],
                      key=lambda e: e.press)
 
@@ -76,6 +82,10 @@ def judge_replay(bm: Beatmap, rp: ParsedReplay) -> JudgeResult:
             res.judgements.append(Judgement(o, ptr, jd, err, ev.key, t,
                                             ev.press_uncertainty))
             ptr += 1
+        elif any(lo <= t <= hi for lo, hi in spinners):
+            # A spinner is spun with a key held down, so presses inside one
+            # are part of playing it, not surplus taps.
+            res.spinner_presses += 1
         else:
             near = None
             if objs:

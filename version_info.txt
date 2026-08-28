@@ -1,0 +1,38 @@
+# PyInstaller version resource.
+#
+# An unsigned executable with an empty version resource and no download
+# history is exactly the shape heuristic antivirus engines flag, so this
+# file is not cosmetic: it is one of the few things a project without a
+# code signing certificate can actually do about it.
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 2, 0, 0),
+    prodvers=(1, 2, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          '040904B0',
+          [StringStruct('CompanyName', 's1n1l'),
+           StringStruct('FileDescription',
+                        'osu-checker \u2014 gameplay analyser for SayoDevice O3C'),
+           StringStruct('FileVersion', '1.2.0.0'),
+           StringStruct('InternalName', 'osu-checker'),
+           StringStruct('LegalCopyright',
+                        'Copyright (c) 2026 s1n1l. MIT licence.'),
+           StringStruct('OriginalFilename', 'osu-checker.exe'),
+           StringStruct('ProductName', 'osu-checker'),
+           StringStruct('ProductVersion', '1.2.0.0'),
+           StringStruct('Comments',
+                        'https://github.com/s1n1l/Osu-Checker-Sayo-')])
+      ]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)

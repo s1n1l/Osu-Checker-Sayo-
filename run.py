@@ -12,6 +12,16 @@ import sys
 import traceback
 
 
+def _fonts() -> str:
+    """Which faces the theme actually resolved to on this machine."""
+    from PySide6.QtWidgets import QApplication
+    from osuchecker.gui import theme
+
+    app = QApplication.instance() or QApplication([])
+    return (f"ui={theme.ui_family()} mono={theme.mono_family()} "
+            f"num={theme.num_family()}")
+
+
 def _selftest(replay: str | None) -> int:
     lines: list[str] = []
     ok = True
@@ -27,7 +37,10 @@ def _selftest(replay: str | None) -> int:
 
     from osuchecker.paths import data_dir, is_frozen, resource_path
 
-    lines.append(f"frozen={is_frozen()}  python={sys.version.split()[0]}")
+    from osuchecker import __version__
+
+    lines.append(f"osu-checker {__version__}  frozen={is_frozen()}  "
+                 f"python={sys.version.split()[0]}")
     lines.append(f"assets={resource_path('assets')}")
     lines.append(f"data={data_dir()}")
 
@@ -37,6 +50,44 @@ def _selftest(replay: str | None) -> int:
     check("beatmap index", lambda: len(
         __import__("osuchecker.replay.index", fromlist=["BeatmapIndex"])
         .BeatmapIndex().by_md5))
+    check("QtMultimedia", lambda: __import__(
+        "PySide6.QtMultimedia", fromlist=["QSoundEffect"]).QSoundEffect.__name__)
+    check("gui modules", lambda: [
+        __import__(f"osuchecker.gui.{name}", fromlist=["x"]).__name__.split(".")[-1]
+        for name in ("theme", "widgets", "lane", "playback", "trainer",
+                     "main")])
+    def rhythms():
+        from osuchecker.analysis import patterns
+        out = {}
+        for preset in patterns.PATTERNS:
+            notes, openers = patterns.build(preset, 180.0, 10.0, seed=1)
+            hit = patterns.judge(notes, openers, list(notes), 40.0)
+            out[preset.key] = f"{len(notes)}n/{len(openers)}r"
+            if hit.hits != len(notes) or hit.extras:
+                raise RuntimeError(f"{preset.key} does not judge clean")
+        return out
+
+    check("trainer patterns", rhythms)
+    check("fonts", lambda: _fonts())
+    check("key names", lambda: [
+        __import__("osuchecker.device.keys", fromlist=["key_name"]).key_name(c)
+        for c in (0x50, 0x56, 0x42, 0x20)])
+    check("metronome clicks", lambda: [
+        __import__("osuchecker.gui.trainer", fromlist=["click_file"])
+        .click_file(accent) for accent in (False, True)][0][-10:])
+    def translations():
+        from osuchecker.i18n import LANGUAGES, set_language, t
+        out = {}
+        for code in LANGUAGES:
+            set_language(code)
+            sample = t("tab.analysis")
+            if sample == "tab.analysis":
+                raise RuntimeError(f"{code}: strings not bundled")
+            out[code] = sample
+        set_language("en")
+        return out
+
+    check("translations", translations)
 
     if replay:
         def parse():
@@ -46,7 +97,10 @@ def _selftest(replay: str | None) -> int:
             if a.error:
                 return f"parsed, but {a.error}"
             return (f"{a.title} | error {a.mean_error:+.1f} ms, "
-                    f"UR {a.ur:.0f}, episodes {len(a.episodes)}")
+                    f"UR {a.ur:.0f}, episodes {len(a.episodes)}, "
+                    f"align {a.alignment.source} "
+                    f"{a.alignment.shift:+.0f} ms "
+                    f"cover {a.alignment.coverage * 100:.0f}%")
         check("replay analysis", parse)
 
     report = "\n".join(lines)

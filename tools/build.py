@@ -2,6 +2,13 @@
 
 onedir rather than onefile: onefile unpacks about 160 MB into a temporary
 folder on every start, which costs roughly ten seconds.
+
+Two flags are here for antivirus reasons rather than technical ones.
+--noupx keeps the executable unpacked, because a compressed section is the
+strongest generic malware signal a scanner has, and --version-file fills in
+the version resource, because an empty one reads as machine generated. The
+real fix is a code signing certificate; these only reduce the count. See
+SECURITY.md.
 """
 import shutil
 import subprocess
@@ -17,18 +24,24 @@ def main() -> int:
     if not icon.exists():
         print("assets/icon.ico is missing, run tools/make_icon.py first")
         return 1
+    version_file = ROOT / "version_info.txt"
+    if not version_file.exists():
+        print("version_info.txt is missing")
+        return 1
 
     for d in ("build", "dist"):
         shutil.rmtree(ROOT / d, ignore_errors=True)
 
     cmd = [
         sys.executable, "-m", "PyInstaller",
-        "--noconfirm", "--clean", "--windowed",
+        "--noconfirm", "--clean", "--windowed", "--noupx",
         "--name", NAME,
         "--icon", str(icon),
+        "--version-file", str(version_file),
         "--add-data", f"{ROOT / 'assets'};assets",
         "--collect-binaries", "hid",
         "--copy-metadata", "osrparse",
+        "--collect-submodules", "osuchecker.translations",
         "--exclude-module", "tkinter",
         "--exclude-module", "matplotlib",
         "--exclude-module", "PySide6.QtWebEngineCore",

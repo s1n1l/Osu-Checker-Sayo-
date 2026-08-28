@@ -9,6 +9,8 @@ settings and game settings.
 
 Languages: **English · [Українська](README.uk.md) · [中文](README.zh.md)**
 
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support%20the%20project-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/s1n1x)
+
 ---
 
 ## Download
@@ -16,6 +18,14 @@ Languages: **English · [Українська](README.uk.md) · [中文](README.
 Grab the latest `osu-checker-windows.zip` from
 [Releases](../../releases), unpack it anywhere and run `osu-checker.exe`.
 Windows only. Python is not required.
+
+> **Some antivirus engines flag the .exe.** It is a false positive caused by
+> PyInstaller packaging, and the whole case is laid out in
+> [SECURITY.md](SECURITY.md) — what triggers it, which engines pass it, what
+> the sandbox verdict was, and the dependency audit you can re-run yourself
+> with `python tools/audit_deps.py`. The app has no network code at all.
+> If you would rather not trust a binary from a stranger on the internet,
+> [build it from source](#building-from-source) — it takes two commands.
 
 ## Tabs
 
@@ -42,6 +52,64 @@ Plus a breakdown by jump distance and by direction across eight sectors.
 **Problem spots** — the most expensive stretches of the map with the time,
 what was lost and the cause: *fell behind*, *rushed*, *scatter*, *aim*.
 
+### Playback
+
+The Playback view replays the map: hit circles coloured by what they scored,
+the cursor with its trail, a dashed line to the note being judged, and a
+read-out saying how far the cursor was from the centre and by how many
+milliseconds the press landed. The strip underneath is the whole map as a
+scatter of errors — click anywhere on it to jump there, or use the dropdown
+to jump straight to a problem spot. **Space** plays and pauses, **←** and
+**→** step a second, **Shift** with them steps five.
+
+Every press is marked on the cursor path in the colour of the hand that made
+it, and the cursor grows a ring while a key is held, so the path shows what was
+pressed and not only where the cursor went. An extra press — one that landed on
+no note — gets a red ring.
+
+If a replay does not line up with its beatmap, the view says so instead of
+quietly drawing nonsense. osu!stable writes the first replay frame on a
+different clock on a good share of plays, and taken literally it shifts the
+whole replay by the length of the intro: the cursor drifts away from the
+notes, presses land on the wrong notes, and aim looks catastrophic
+everywhere. Both readings are now tried against the beatmap and the one where
+presses actually fall on notes wins; when a correction is applied, a banner
+says by how much.
+
+### Tapping
+
+Numbers about the presses themselves rather than about accuracy: hold time
+and its spread, the difference in hold between hands, how often the hands
+alternate, how many presses land in a row on one hand, the fastest tempo
+actually sustained, and fatigue, meaning how much UR grows on stream sections
+from the first third of the map to the last.
+
+### Trainer
+
+Pick a pattern and a tempo; the notes travel to a line and you answer them.
+Presses are judged against those note times the way the game judges a map, so
+the numbers are the ones the Analysis tab already uses: hit error, UR, misses,
+extra presses.
+
+| Pattern | What it is | What it trains |
+| --- | --- | --- |
+| Continuous stream | no rests at all | stamina, and only stamina |
+| Long streams | 16 notes, two beats of rest | holding tempo, then recovering |
+| Bursts | runs of 5–9, shuffled, a beat and a half apart | entering a burst on time |
+| Triples | 3 notes, one beat of rest | the whole run is the entry |
+| Doubles | 2 notes, one beat of rest | the hardest to keep clean |
+| Mixed | 1 to 8 notes, random order | closest to a real map |
+
+The one thing a metronome cannot tell you is how much later you *enter* a run
+than you carry it. That is reported on its own, because coming in late and then
+catching up is a different fault from being late throughout — and it is the one
+bursts expose.
+
+Presses are read from the O3C through Raw Input, on the keys bound in Settings.
+Gaps shorter than 20 ms are excluded and reported: a hand cannot tap that fast,
+so they are either the switch bouncing or the machine stalling, and the trainer
+says which by checking whether its own input thread was scheduled late.
+
 ### Recording
 
 Three sources at once:
@@ -67,7 +135,10 @@ searches your own collection for maps with streams at the target BPM.
 
 ### Settings
 
-Language, osu! paths, and the beatmap index (MD5 → `.osu`).
+Language, **which three keys your device sends** (press the button, then press
+the key — nothing else you type is ever seen), the actuation and release
+thresholds you set in the SayoDevice configurator, osu! paths, and the beatmap
+index (MD5 → `.osu`). Nothing is ever written to the device.
 
 ## How the causes are told apart
 
@@ -108,8 +179,10 @@ Request, usage page `0xFF12`, 1024 byte packet:
 
 The reply is `len=0x000a` followed by three `u16` values: key travel in
 micrometres, `0` at rest and `4000` at the full 4 mm travel. Index 0 returns
-the raw ADC of one key, index 2 the raw ADC of all three. Key indexes are
-`P = 0, V = 1, B = 2`.
+the raw ADC of one key, index 2 the raw ADC of all three. The three values
+always arrive in the same order, so a bound key is stored as the virtual key
+code sitting in that slot — which key that is comes from Settings, and
+defaults to `P`, `V`, `B`.
 
 Interface `0xFF11` speaks the same protocol in 64 byte packets; request `0x1F`
 returns 16 consecutive samples of a single key, but the key cannot be
@@ -142,6 +215,35 @@ The recorder uses Raw Input, which reports the HID device handle. Only events
 from `VID_8089&PID_0009` are recorded, and by default only while the osu!
 window has focus. Anything typed on a regular keyboard is not visible to the
 app.
+
+## Antivirus warnings
+
+Some antivirus engines flag the packaged `.exe`. It is a false positive, and
+[SECURITY.md](SECURITY.md) explains why in full: every verdict is generic or
+machine-learning with no malware family attached, the sandbox verdict is
+clean, and every high-reputation engine (Kaspersky, ESET, BitDefender,
+Sophos, Symantec, Trend Micro, Malwarebytes, Fortinet, CrowdStrike, Google)
+passes it.
+
+What actually triggers them is PyInstaller packaging: the ~5.6 MB compressed
+overlay at almost maximum entropy, the bootloader's process-enumeration
+imports, and — until v1.2.0 — a completely empty version resource. That last
+one is now filled in and UPX is explicitly disabled; the real fix is a code
+signing certificate, which this project does not have.
+
+The application has no network code at all. If you would rather not trust the
+binary, build it from source (below) — `python tools/audit_deps.py` verifies
+every dependency against pip's recorded hashes first.
+
+## Dependencies
+
+Shipped inside the executable: **PySide6** (Qt bindings), **numpy**,
+**pyqtgraph** (plots), **osrparse** (`.osr` reader), **hidapi** (analogue key
+travel). Build only: PyInstaller and Pillow. All pinned in
+`requirements.txt`, all from PyPI. `python tools/audit_deps.py` re-hashes
+every installed file against pip's `RECORD`, checks for `.pth` startup hooks,
+and scans for networking, subprocesses and `eval` — see
+[SECURITY.md](SECURITY.md) for the results.
 
 ## Building from source
 
@@ -203,6 +305,14 @@ and the clean room firmware project
 Replay parsing uses [osrparse](https://github.com/kszlim/osu-replay-parser).
 
 Not affiliated with osu! or SayoDevice.
+
+## Support
+
+The app is free and always will be. If it told you something useful about your play and you want to say thanks, there is a Ko-fi page:
+
+**[ko-fi.com/s1n1x](https://ko-fi.com/s1n1x)**
+
+Entirely optional — nothing in the app is locked behind it.
 
 ## License
 

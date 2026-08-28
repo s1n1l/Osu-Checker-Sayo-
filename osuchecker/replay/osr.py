@@ -51,6 +51,24 @@ class ParsedReplay:
     key_channels: tuple[str, str] = ("K1", "K2")
     frames: list[tuple[float, float, float, int]] = field(default_factory=list)
     key_events: list[KeyEvent] = field(default_factory=list)
+    time_shift: float = 0.0
+
+    def shift_times(self, ms: float) -> None:
+        """Moves the whole replay clock, frames and key events together.
+
+        Stable does not always write the first frame on the same clock as
+        the rest, so the offset between the two readings is decided against
+        the beatmap and applied here. See replay.align.
+        """
+        if not ms:
+            return
+        self.frames = [(t + ms, x, y, k) for t, x, y, k in self.frames]
+        for e in self.key_events:
+            e.press += ms
+            e.release += ms
+            e.press_prev += ms
+            e.release_prev += ms
+        self.time_shift += ms
 
     @property
     def frame_rate(self) -> float:

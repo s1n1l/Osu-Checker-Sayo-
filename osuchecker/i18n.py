@@ -30,7 +30,12 @@ def current_language() -> str:
     return _current
 
 
-def t(key: str, **params) -> str:
+def t(key: str, /, **params) -> str:
+    """Looks up a string and fills its placeholders.
+
+    The lookup key is positional-only so that a translation is free to use
+    a placeholder called `key` -- which the device key bindings do.
+    """
     text = _table(_current).get(key)
     if text is None:
         text = _table(DEFAULT).get(key, key)

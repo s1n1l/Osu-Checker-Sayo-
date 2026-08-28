@@ -3,6 +3,20 @@
 A low level hook cannot tell which physical device produced an event.
 Raw Input carries the device handle, so only keys from the O3C are
 recorded and nothing typed on the regular keyboard is visible.
+
+Timing is the hard part. Reading the clock when Python reaches the handler
+measures when this thread was next scheduled, not when the key went down.
+Under GIL contention with a busy GUI thread that is out by tens of
+milliseconds, and it bunches presses together: two taps 80 ms apart get
+near-identical timestamps, which reads as an impossibly fast double tap.
+
+So the age of the message is asked of Windows instead. GetMessageTime
+returns when the message was posted, and subtracting that from the current
+tick gives how long it sat in the queue. The correction only kicks in when
+the message is measurably old, because the tick counter is coarser than
+perf_counter and there is no reason to add quantisation to a press that was
+handled immediately. The thread also asks for 1 ms timer resolution, which
+is what makes the tick counter fine enough to be worth consulting.
 """
 from __future__ import annotations
 
@@ -15,6 +29,14 @@ from typing import Callable
 
 user32 = ctypes.WinDLL("user32", use_last_error=True)
 kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+winmm = ctypes.WinDLL("winmm", use_last_error=True)
+
+# GetMessageTime is quantised to the system tick, which is 15 to 16 ms
+# whatever the multimedia timer resolution is. So the correction is only
+# worth applying to a message that waited clearly longer than that: below
+# the threshold perf_counter is the better clock, above it being accurate
+# to a tick beats being wrong by the length of the stall.
+STALL_MS = 30
 
 WM_INPUT = 0x00FF
 WM_QUIT = 0x0012
@@ -89,6 +111,10 @@ user32.GetMessageW.restype = ctypes.c_int
 user32.PostThreadMessageW.argtypes = [wintypes.DWORD, wintypes.UINT,
                                       wintypes.WPARAM, wintypes.LPARAM]
 user32.PostThreadMessageW.restype = wintypes.BOOL
+user32.GetMessageTime.argtypes = []
+user32.GetMessageTime.restype = wintypes.LONG
+kernel32.GetTickCount.argtypes = []
+kernel32.GetTickCount.restype = wintypes.DWORD
 kernel32.GetModuleHandleW.argtypes = [wintypes.LPCWSTR]
 kernel32.GetModuleHandleW.restype = wintypes.HMODULE
 user32.RegisterClassW.argtypes = [ctypes.c_void_p]
@@ -143,6 +169,9 @@ class RawKeyboardListener:
         self._wndproc = WNDPROC(self._proc)
         self.error: str | None = None
         self.seen_devices: set[str] = set()
+        # How badly this thread was starved, for the views to report.
+        self.stalled = 0
+        self.max_stall_ms = 0
 
     def start(self) -> bool:
         self._thread = threading.Thread(target=self._run, daemon=True,
@@ -159,11 +188,26 @@ class RawKeyboardListener:
 
     def _proc(self, hwnd, msg, wparam, lparam):
         if msg == WM_INPUT:
-            self._handle_input(lparam)
+            self._handle_input(lparam, self._message_time())
             return 0
         return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
 
-    def _handle_input(self, lparam):
+    def _message_time(self) -> float:
+        """When the key actually went down, in perf_counter terms.
+
+        Only backdates a message that waited in the queue; a message handled
+        at once keeps the finer clock.
+        """
+        now = time.perf_counter()
+        age = ctypes.c_int32(
+            kernel32.GetTickCount() - user32.GetMessageTime()).value
+        if age <= STALL_MS:
+            return now
+        self.max_stall_ms = max(self.max_stall_ms, age)
+        self.stalled += 1
+        return now - age / 1000.0
+
+    def _handle_input(self, lparam, t):
         size = wintypes.UINT(0)
         user32.GetRawInputData(wintypes.HANDLE(lparam), RID_INPUT, None,
                                ctypes.byref(size),
@@ -176,7 +220,6 @@ class RawKeyboardListener:
                                      ctypes.sizeof(RAWINPUTHEADER))
         if got == 0xFFFFFFFF or got == 0:
             return
-        t = time.perf_counter()
         ri = ctypes.cast(buf, ctypes.POINTER(RAWINPUT)).contents
         if ri.header.dwType != RIM_TYPEKEYBOARD:
             return
@@ -197,6 +240,7 @@ class RawKeyboardListener:
                               down=not (kb.Flags & RI_KEY_BREAK), device=name))
 
     def _run(self):
+        winmm.timeBeginPeriod(1)
         try:
             self._tid = kernel32.GetCurrentThreadId()
             hinst = kernel32.GetModuleHandleW(None)
@@ -220,12 +264,16 @@ class RawKeyboardListener:
         except Exception as exc:
             self.error = str(exc)
             self._ready.set()
+            winmm.timeEndPeriod(1)
             return
 
         self._ready.set()
         msg = wintypes.MSG()
-        while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
-            user32.TranslateMessage(ctypes.byref(msg))
-            user32.DispatchMessageW(ctypes.byref(msg))
-        user32.DestroyWindow(self._hwnd)
-        user32.UnregisterClassW(cls_name, hinst)
+        try:
+            while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
+                user32.TranslateMessage(ctypes.byref(msg))
+                user32.DispatchMessageW(ctypes.byref(msg))
+        finally:
+            user32.DestroyWindow(self._hwnd)
+            user32.UnregisterClassW(cls_name, hinst)
+            winmm.timeEndPeriod(1)
