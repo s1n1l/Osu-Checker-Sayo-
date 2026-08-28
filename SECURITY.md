@@ -98,10 +98,14 @@ reproducible byte for byte, so **each release has its own hash and needs its
 own scan** — the hash and a VirusTotal link are published in the release
 notes, and the table here is the running record.
 
-| Release | Detections | Notes |
-| --- | --- | --- |
-| v1.1.0 | 10 / 68 | `c0446a22…04c75`, scanned 2026-08-27. No version resource. |
-| v1.2.0 | [live report](https://www.virustotal.com/gui/file/3d78f27c01bbef5212aa5f3616b973657ca8be0a214cb1e34f6ef35e4dffb6e2/detection) | `3d78f27c…fb6e2`, the first build with a version resource and UPX explicitly off |
+| Release | Detections | Distinct engines | Report |
+| --- | --- | --- | --- |
+| v1.1.0 | 10 | ~7 | `c0446a22…04c75`, scanned 2026-08-27. No version resource. |
+| v1.2.0 | **8 of 71** | **6** | [live report](https://www.virustotal.com/gui/file/3d78f27c01bbef5212aa5f3616b973657ca8be0a214cb1e34f6ef35e4dffb6e2/detection) · `3d78f27c…fb6e2`, scanned 2026-08-28 |
+
+"Distinct engines" is lower than the detection count because several products
+share one engine: Avast and AVG are the same, and so are Avira and F-Secure.
+Counting products double-counts the same opinion.
 
 ### Checking a release yourself
 
@@ -122,37 +126,79 @@ link rather than a number copied into this file, because the count changes
 as engines update their definitions, and a number written down here would
 quietly go stale.
 
-### Why the v1.1.0 result is a false positive
+### The v1.2.0 result in full
 
-The v1.1.0 binary scored 10 out of 68, and the shape of that result says
-what it is:
+Here is every engine that flagged the current build, with exactly what it
+said. Judge it yourself rather than taking a count at face value.
 
-* **Every verdict is generic or machine-learning, with no family name** —
-  `Wacatac.B!ml`, `Win64:Malware-gen`, `TR/W64.Malware`, `Unsafe`,
-  `Malicious (score: 99)`, `Dropper.Agent`. None of them identify actual
-  malware; they identify "this looks unusual".
-* **It is about seven distinct engines, not ten.** Avast and AVG share an
-  engine, as do Avira and WithSecure.
+| Engine | Verdict | What that label means |
+| --- | --- | --- |
+| Microsoft | `Trojan:Win32/Wacatac.B!ml` | the `!ml` suffix is Microsoft's own marker for a machine-learning guess, and Wacatac.B!ml is the single most common false-positive label there is |
+| Avast | `Win64:Malware-gen` | `-gen` is a generic bucket, not a family |
+| AVG | `Win64:Malware-gen` | same engine as Avast |
+| Avira | `TR/W64.Malware` | generic |
+| F-Secure | `Trojan.TR/W64.Malware` | Avira's engine again |
+| Cynet | `Malicious (score: 99)` | a score, no name |
+| K7AntiVirus | `Trojan ( 006e4d5e1 )` | a numeric signature id, no family |
+| APEX | `Malicious` | no name at all |
+
+**Not one of them names an actual malware family.** Every label is either a
+generic bucket (`-gen`, `TR/W64.Malware`), an explicit machine-learning guess
+(`!ml`), or a bare score. Real malware gets a name, because somebody analysed
+it.
+
+Two details worth noticing:
+
+* **K7 disagrees with itself.** `K7AntiVirus` flags the file; `K7GW`, the same
+  vendor's gateway product, does not.
+* **The only crowdsourced YARA rule that matches is called "PyInstaller"**,
+  and its own description reads: *"Identifies executable converted using
+  PyInstaller. This rule by itself does NOT necessarily mean the detected
+  file is malicious."* That is the whole story in one sentence.
+
+What passed it:
+
 * **Every high-reputation engine is clean**: Kaspersky, ESET, BitDefender,
-  Sophos, Symantec, Trend Micro, Malwarebytes, Fortinet, CrowdStrike, Google.
-* **The sandbox verdict is clean.** VirusTotal's Zenbox detonated the binary
-  and reported no malicious behaviour, at 99% confidence.
+  Sophos, Symantec, Trend Micro, McAfee, Malwarebytes, Fortinet, CrowdStrike,
+  SentinelOne, Google, Emsisoft, G DATA, Dr.Web, Palo Alto, Elastic,
+  DeepInstinct, Ikarus, Panda, Trellix.
+* **The sandbox verdict is CLEAN.** VirusTotal's Zenbox ran the binary and
+  classified it harmless at 99% confidence.
+* **Community votes: 0 malicious, 0 harmless.** Nobody has looked at it and
+  disagreed.
+
+The one behavioural note is a Sigma rule of medium severity, "Potential
+Python DLL SideLoading", which fired because the app loads
+`_internal\python312.dll` from the folder it was unpacked into. That is
+precisely what a PyInstaller onedir build does with its own interpreter.
+
+### Did the v1.2.0 changes help?
+
+A little: 10 detections became 8, and two engines that flagged v1.1.0 —
+Cylance and Zillya — now pass the file. The version resource and the absence
+of UPX are visible in the report: VirusTotal reads out the product name, the
+version, the copyright and the GitHub URL from the executable's own metadata,
+which an anonymous dropper does not carry.
+
+It did not go to zero, and it was never going to. See the last section.
 
 ### Why it triggers them
 
 * PyInstaller appends the entire Python application to the executable as a
-  compressed overlay. On this build that is ~5.6 MB at entropy 7.9994 out of
-  8.0 — statistically indistinguishable from encrypted or packed payload,
-  which is exactly what generic heuristics look for.
+  compressed overlay. VirusTotal measures it on this build at 5,676,988 bytes
+  with an entropy of 7.99938 out of 8.0 — statistically indistinguishable
+  from encrypted or packed payload, which is exactly what generic heuristics
+  look for. Nothing can be done about that short of not using PyInstaller.
 * The PyInstaller bootloader imports `CreateToolhelp32Snapshot`,
   `Process32First/Next`, `OpenProcessToken` and `VirtualProtect`. That
   combination — enumerate processes, open a token, make memory executable —
   is the classic injector fingerprint, even though here it only unpacks and
   starts Python.
-* The file has **no code signature** and, before v1.2.0, **no version
-  information at all**. An unsigned binary with an empty version resource and
-  zero download reputation is precisely the profile these heuristics were
-  trained on.
+* The file has **no code signature**, and every release is a file the world
+  has never seen before. The v1.2.0 report shows it plainly: submitted once,
+  from one source, reputation 0. An unsigned binary with no download history
+  is precisely the profile these heuristics were trained on, and it resets
+  with every build.
 
 UPX is *not* involved — it was never applied, and it is now explicitly
 disabled in the build.
