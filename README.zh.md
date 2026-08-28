@@ -268,9 +268,11 @@ O3C 的 HID 协议是在设备上实测得出的，包结构参考了
 
 本程序是免费的，将来也一直会是。如果它让你看清了自己打图的某些问题，想说声谢谢，可以来 Ko-fi：
 
-**[ko-fi.com/s1n1x](https://ko-fi.com/s1n1x)**
+**[ko-fi.com/s1n1x](https://ko-fi.com/s1n1x)** · **[patreon.com/OsuCheckerSayo](https://www.patreon.com/cw/OsuCheckerSayo)**
 
-完全自愿，程序里没有任何功能需要付费解锁。
+完全自愿，程序里没有任何功能需要付费解锁，将来也不会有。这笔钱唯一的用途是代码签名
+证书 —— 它能让 Windows 和杀毒软件不再对每一个下载者发出警告，详见
+[SECURITY.md](SECURITY.md)。
 
 ## 许可证
 

@@ -101,7 +101,7 @@ notes, and the table here is the running record.
 | Release | Detections | Notes |
 | --- | --- | --- |
 | v1.1.0 | 10 / 68 | `c0446a22…04c75`, scanned 2026-08-27. No version resource. |
-| v1.2.0 | see the release notes | first build with a version resource and UPX explicitly off |
+| v1.2.0 | [live report](https://www.virustotal.com/gui/file/3d78f27c01bbef5212aa5f3616b973657ca8be0a214cb1e34f6ef35e4dffb6e2/detection) | `3d78f27c…fb6e2`, the first build with a version resource and UPX explicitly off |
 
 ### Checking a release yourself
 
@@ -116,6 +116,11 @@ Paste that hash into [virustotal.com](https://www.virustotal.com/) — if the
 file has been scanned before you get the existing report without uploading
 anything. Compare it with the hash in the release notes: if they differ, you
 did not get the file that was published here.
+
+The report for the current build is linked in the table above. It is a live
+link rather than a number copied into this file, because the count changes
+as engines update their definitions, and a number written down here would
+quietly go stale.
 
 ### Why the v1.1.0 result is a false positive
 

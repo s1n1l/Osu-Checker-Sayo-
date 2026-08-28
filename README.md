@@ -310,9 +310,12 @@ Not affiliated with osu! or SayoDevice.
 
 The app is free and always will be. If it told you something useful about your play and you want to say thanks, there is a Ko-fi page:
 
-**[ko-fi.com/s1n1x](https://ko-fi.com/s1n1x)**
+**[ko-fi.com/s1n1x](https://ko-fi.com/s1n1x)** · **[patreon.com/OsuCheckerSayo](https://www.patreon.com/cw/OsuCheckerSayo)**
 
-Entirely optional — nothing in the app is locked behind it.
+Entirely optional — nothing in the app is locked behind it, and nothing will
+be. The one thing it would pay for is a code signing certificate, which is
+what stops Windows and the antivirus vendors warning about the download for
+everyone who gets it — see [SECURITY.md](SECURITY.md).
 
 ## License
 
